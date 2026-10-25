@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#103b70">
+<title>ICU Facility Monitoring | RS Universitas Airlangga</title>
+<style>
+:root{--navy:#103b70;--blue:#1761a8;--yellow:#ffc629;--orange:#f28a18;--pale:#eef6ff;--ink:#15365e;--muted:#5d6e82;--line:#d9e6f3;--green:#16834b;--red:#c93333}
+*{box-sizing:border-box}body{margin:0;background:#f3f7fb;color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
+.topbar{background:linear-gradient(110deg,#092b54,#14518d);color:#fff;padding:12px 22px;display:flex;align-items:center;gap:16px;box-shadow:0 3px 12px #08274833;position:sticky;top:0;z-index:5}
+.logos{display:flex;align-items:center;gap:10px;flex-shrink:0}.logos img{height:48px;max-width:140px;object-fit:contain;background:#fff;border-radius:7px;padding:3px}.brand{min-width:0;flex:1}.brand h1{font-size:clamp(17px,2.1vw,27px);margin:0;font-weight:850;letter-spacing:.2px}.brand p{margin:3px 0 0;color:#ffd34e;font-weight:700;font-size:14px}.brand small{display:block;color:#e7f0ff;margin-top:3px}.topright{font-size:12px;text-align:right;color:#eaf3ff;white-space:nowrap}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 78px)}.sidebar{background:linear-gradient(#103b70,#092c53);padding:14px 10px;color:#fff}.navbtn{display:flex;width:100%;align-items:center;gap:10px;border:0;background:transparent;color:#fff;padding:12px;border-radius:10px;text-align:left;margin-bottom:5px;font-weight:650}.navbtn:hover,.navbtn.active{background:var(--yellow);color:#173b65}.navbtn .ico{font-size:21px;width:26px;text-align:center}.side-note{margin:24px 8px 0;color:#c9ddf4;font-size:12px;line-height:1.5}
+main{padding:18px;min-width:0}.hero{border-radius:18px;overflow:hidden;background:linear-gradient(90deg,#fff 0%,#f4f9ff 52%,#d9eaff 100%);display:grid;grid-template-columns:1.1fr .9fr;min-height:220px;box-shadow:0 5px 20px #12365c12;margin-bottom:18px;border:1px solid #dce8f4}.hero-copy{padding:26px;align-self:center}.hero h2{font-size:clamp(28px,4vw,48px);line-height:.98;margin:0;color:#103b70;font-weight:900}.hero h2 span{color:#ef9217}.hero p{font-weight:750;margin:12px 0 16px}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#fff;border:1px solid #d9e6f3;border-radius:12px;padding:8px 11px;font-size:12px;font-weight:750;display:flex;align-items:center;gap:7px}.pill b{font-size:20px}.hero-art{display:flex;align-items:center;justify-content:center;gap:12px;padding:18px;background:radial-gradient(ellipse at center,#fff9 0%,transparent 70%)}.illustration{width:29%;min-width:72px;max-width:130px;aspect-ratio:1;display:grid;place-items:center;border-radius:24px;background:linear-gradient(145deg,#fff,#eaf4ff);box-shadow:0 10px 25px #1c52842b;font-size:clamp(42px,6vw,76px);border:1px solid #d4e6f7}.illustration:nth-child(2){background:linear-gradient(145deg,#fff4f1,#ffe2dc)}.illustration:nth-child(3){background:linear-gradient(145deg,#fff9e9,#ffe4a0)}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 2px 12px}.section-title h2{margin:0;font-size:21px}.sub{color:var(--muted);font-size:13px}.room-grid,.module-grid,.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.room-card{border:1px solid var(--line);background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 15px #15365e0b}.room-card .room-head{background:linear-gradient(120deg,#103b70,#1b65a8);color:#fff;padding:18px;display:flex;justify-content:space-between;align-items:center;gap:10px}.room-head h3{margin:0;font-size:20px}.room-head small{color:#ffda59}.room-card .room-body{padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.module-tile{border:1px solid var(--line);background:#f8fbff;border-radius:12px;padding:12px 8px;text-align:center;color:var(--ink);font-weight:750;min-height:94px}.module-tile:hover{border-color:#f0aa20;background:#fff8e7}.module-tile .big{font-size:29px;display:block;margin-bottom:5px}.module-tile small{display:block;font-weight:500;color:var(--muted);margin-top:4px;font-size:11px}
+.quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.quick{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px}.quick .qico{font-size:30px}.quick strong{display:block;font-size:14px}.quick small{color:var(--muted);font-size:12px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 15px #15365e0a;margin-bottom:16px}.panel h3{margin:0 0 5px;font-size:19px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:750}.btn-primary{background:#103b70;color:#fff}.btn-primary:hover{background:#1b5c9d}.btn-yellow{background:var(--yellow);color:#173b65}.btn-light{background:#e8f0f8;color:#173b65}.btn-danger{background:#ffebeb;color:#9e2222}.btn:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:6px;min-width:0}.field label{font-size:12px;font-weight:750;color:#29486c}.field input,.field select,.field textarea{width:100%;border:1px solid #ccd9e7;border-radius:8px;padding:10px;background:#fff;color:#18375c;min-width:0}.field textarea{min-height:78px;resize:vertical}.field.full{grid-column:1/-1}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:650px;font-size:12px}th,td{padding:9px 10px;border-bottom:1px solid #e5edf5;text-align:left;vertical-align:middle}th{background:#edf4fb;color:#173b65}td input,td select{width:100%;min-width:90px;padding:7px;border:1px solid #d1ddeb;border-radius:7px}.checkrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,.7fr);align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f6;font-size:13px}.checkrow:last-child{border-bottom:0}.status{border-radius:9px;padding:12px 14px;margin:12px 0;font-size:13px;font-weight:700}.status.ok{background:#e4f7ec;color:#146c3c;border:1px solid #a9e5c1}.status.err{background:#fff0f0;color:#a32323;border:1px solid #f3b5b5}.status.info{background:#edf5ff;color:#174d85;border:1px solid #c7def8}.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}.statbox{border:1px solid var(--line);border-radius:13px;padding:15px;background:linear-gradient(135deg,#fff,#f0f7ff)}.statbox small{color:var(--muted)}.statbox strong{font-size:27px;display:block;margin:7px 0}.tag{display:inline-block;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:800;background:#e5f7ec;color:#167345}.tag.warn{background:#fff2d8;color:#9a5b00}.tag.bad{background:#ffe6e6;color:#b52828}.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed #cbd9e8;border-radius:12px}
+footer{text-align:center;padding:18px;color:#6d7e91;font-size:12px}
+@media(max-width:1000px){.layout{grid-template-columns:175px minmax(0,1fr)}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr}.hero-art{display:none}.topright{display:none}}
+@media(max-width:700px){.topbar{padding:10px;gap:9px;align-items:flex-start}.logos{gap:4px}.logos img{height:34px;max-width:85px}.brand h1{font-size:15px}.brand p{font-size:11px}.brand small{font-size:10px}.layout{display:block}.sidebar{display:flex;gap:6px;overflow-x:auto;padding:8px;position:sticky;top:59px;z-index:4}.navbtn{white-space:nowrap;width:auto;flex-shrink:0;padding:9px;font-size:12px;margin:0}.navbtn .ico{font-size:17px;width:auto}.side-note{display:none}main{padding:11px}.hero{min-height:0;margin-bottom:12px}.hero-copy{padding:20px}.hero h2{font-size:31px}.pills{gap:5px}.pill{font-size:10px;padding:6px}.room-grid,.module-grid,.stats{grid-template-columns:1fr}.room-card .room-body{grid-template-columns:1fr 1fr 1fr}.quick-grid{grid-template-columns:1fr 1fr;gap:8px}.quick{padding:10px;gap:7px}.quick .qico{font-size:24px}.quick strong{font-size:12px}.quick small{font-size:10px}.panel{padding:13px}.panel-head{align-items:flex-start}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.section-title h2{font-size:18px}.actions .btn{flex:1}.checkrow{grid-template-columns:minmax(0,1fr) 120px}}
+@media(max-width:390px){.logos img:nth-child(2){display:none}.brand h1{font-size:13px}.hero h2{font-size:27px}.room-card .room-body{grid-template-columns:1fr}.module-tile{min-height:0;display:flex;align-items:center;text-align:left;gap:12px}.module-tile .big{margin:0}.quick-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logos">
+    <img src="logo-unair.png" alt="Logo Rumah Sakit Universitas Airlangga">
+    <img src="logo-wecare.png" alt="Logo WE CARE">
+  </div>
+  <div class="brand">
+    <h1>ICU FACILITY MONITORING</h1>
+    <p>RS Universitas Airlangga</p>
+    <small>Grha Trimed 1 &amp; Grha Trimed 2 · Pemantauan fasilitas dan peralatan ICU</small>
+  </div>
+  <div class="topright" id="dateTime"></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <button class="navbtn active" data-page="home"><span class="ico">⌂</span> Beranda</button>
+  <button class="navbtn" data-page="rooms"><span class="ico">▦</span> Pilih Ruangan</button>
+  <button class="navbtn" data-page="reports"><span class="ico">▥</span> Rekap &amp; Laporan</button>
+  <button class="navbtn" data-page="master"><span class="ico">▤</span> Master Data</button>
+</aside>
+<main>
+<section id="page-home">
+  <div class="hero">
+    <div class="hero-copy">
+      <h2>ICU FACILITY<br><span>MONITORING</span></h2>
+      <p>Grha Trimed 1 &amp; Grha Trimed 2</p>
+      <div class="pills"><span class="pill"><b>🌡️</b> Suhu &amp; Tekanan</span><span class="pill"><b>🧯</b> Inspeksi APAR</span><span class="pill"><b>⚡</b> Defibrilator</span></div>
+    </div>
+    <div class="hero-art" aria-label="Ilustrasi peralatan monitoring"><div class="illustration">🌡️</div><div class="illustration">🧯</div><div class="illustration">⚡</div></div>
+  </div>
+  <div class="section-title"><h2>Pilih Ruangan ICU</h2><span class="sub">Pilih ruangan untuk mulai pemeriksaan</span></div>
+  <div class="room-grid">
+    <article class="room-card"><div class="room-head"><div><small>RUANG PEMANTAUAN</small><h3>ICU Grha Trimed 1</h3></div><span style="font-size:35px">🏥</span></div><div class="room-body"><button class="module-tile" onclick="openRoom('GT 1','suhu')"><span class="big">🌡️</span>Suhu &amp; Tekanan<small>9 titik suhu</small></button><button class="module-tile" onclick="openRoom('GT 1','apar')"><span class="big">🧯</span>Monitoring APAR<small>Checklist inspeksi</small></button><button class="module-tile" onclick="openRoom('GT 1','defib')"><span class="big">⚡</span>Defibrilator<small>Self test &amp; kalibrasi</small></button></div></article>
+    <article class="room-card"><div class="room-head"><div><small>RUANG PEMANTAUAN</small><h3>ICU Grha Trimed 2</h3></div><span style="font-size:35px">🏥</span></div><div class="room-body"><button class="module-tile" onclick="openRoom('GT 2','suhu')"><span class="big">🌡️</span>Suhu &amp; Tekanan<small>11 titik suhu + 6 titik tekanan</small></button><button class="module-tile" onclick="openRoom('GT 2','apar')"><span class="big">🧯</span>Monitoring APAR<small>Checklist inspeksi</small></button><button class="module-tile" onclick="openRoom('GT 2','defib')"><span class="big">⚡</span>Defibrilator<small>Self test &amp; kalibrasi</small></button></div></article>
+  </div>
+  <div class="section-title"><h2>Ringkasan Data Tersimpan</h2><span class="sub">Terisi setelah data berhasil disimpan</span></div>
+  <div class="quick-grid">
+    <div class="quick"><span class="qico">🌡️</span><div><strong id="countSuhu">0</strong><small>Catatan suhu/tekanan</small></div></div>
+    <div class="quick"><span class="qico">🧯</span><div><strong id="countApar">0</strong><small>Inspeksi APAR</small></div></div>
+    <div class="quick"><span class="qico">⚡</span><div><strong id="countDefib">0</strong><small>Catatan defibrilator</small></div></div>
+    <div class="quick"><span class="qico">📋</span><div><strong id="countAll">0</strong><small>Total catatan lokal sesi ini</small></div></div>
+  </div>
+  <div class="panel" style="margin-top:16px"><h3>Dashboard pemeriksaan</h3><p class="sub">Grafik dan rekap server akan ditampilkan setelah endpoint Google Apps Script dikonfigurasi. Angka di atas hanya menghitung catatan yang berhasil dikonfirmasi selama sesi halaman ini.</p><div id="homeStatus" class="status info">Backend belum dikonfigurasi. Formulir dapat diuji sebagai tampilan, tetapi penyimpanan belum aktif.</div></div>
+</section>
+<section id="page-rooms" class="hidden">
+  <div class="section-title"><h2>Pilih Ruangan</h2><span class="sub">Pilih jenis pemeriksaan setelah masuk ke ruangan</span></div>
+  <div class="room-grid">
+    <article class="room-card"><div class="room-head"><h3>ICU Grha Trimed 1</h3><span>🏥</span></div><div class="room-body"><button class="module-tile" onclick="openRoom('GT 1','suhu')"><span class="big">🌡️</span>Suhu &amp; Tekanan</button><button class="module-tile" onclick="openRoom('GT 1','apar')"><span class="big">🧯</span>APAR</button><button class="module-tile" onclick="openRoom('GT 1','defib')"><span class="big">⚡</span>Defibrilator</button></div></article>
+    <article class="room-card"><div class="room-head"><h3>ICU Grha Trimed 2</h3><span>🏥</span></div><div class="room-body"><button class="module-tile" onclick="openRoom('GT 2','suhu')"><span class="big">🌡️</span>Suhu &amp; Tekanan</button><button class="module-tile" onclick="openRoom('GT 2','apar')"><span class="big">🧯</span>APAR</button><button class="module-tile" onclick="openRoom('GT 2','defib')"><span class="big">⚡</span>Defibrilator</button></div></article>
+  </div>
+</section>
+<section id="page-form" class="hidden">
+  <div class="section-title"><h2 id="formTitle">Formulir Pemeriksaan</h2><button class="btn btn-light" onclick="showPage('rooms')">← Kembali</button></div>
+  <div id="formDescription" class="sub" style="margin-bottom:12px"></div>
+  <form id="inspectionForm" class="panel"></form>
+  <div id="formStatus" aria-live="polite"></div>
+</section>
+<section id="page-reports" class="hidden">
+  <div class="section-title"><h2>Rekap &amp; Laporan</h2><button class="btn btn-light" onclick="loadHistory()">↻ Muat ulang</button></div>
+  <div id="reportStatus" class="status info">Riwayat akan muncul setelah backend dikonfigurasi.</div>
+  <div class="panel"><div class="panel-head"><div><h3>Riwayat pemeriksaan</h3><span class="sub">Data yang dikembalikan backend</span></div><select id="historyFilter" onchange="renderHistory()"><option value="">Semua jenis</option><option value="Suhu & Tekanan">Suhu & Tekanan</option><option value="APAR">APAR</option><option value="Defibrilator">Defibrilator</option></select></div><div id="historyTable" class="empty">Belum ada data untuk ditampilkan.</div></div>
+</section>
+<section id="page-master" class="hidden">
+  <div class="section-title"><h2>Konfigurasi Aplikasi</h2></div>
+  <div class="panel"><h3>Koneksi Google Apps Script</h3><p class="sub">Tempel URL deployment web app yang berakhiran /exec. URL disimpan hanya di browser ini. Backend harus menyediakan endpoint yang sesuai; jangan gunakan data pasien pada konfigurasi publik.</p><div class="field"><label for="apiUrl">Web App URL</label><input id="apiUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="actions"><button class="btn btn-light" onclick="testApi()">Tes koneksi</button><button class="btn btn-primary" onclick="saveConfig()">Simpan konfigurasi</button></div><div id="configStatus" aria-live="polite"></div></div>
+  <div class="panel"><h3>Catatan deployment</h3><ol><li>Upload <code>index.html</code> dan kedua logo ke repository GitHub.</li><li>Deploy Google Apps Script sebagai Web App dan siapkan fungsi POST/GET sesuai protokol aplikasi.</li><li>Masukkan URL /exec di bagian ini.</li><li>Uji simpan dan baca data dengan data dummy sebelum digunakan operasional.</li></ol><p class="sub">Jangan memasukkan kredensial rahasia ke HTML publik. Atur autentikasi dan akses Google Drive/Sheets secara terbatas.</p></div>
+</section>
+<footer>ICU Facility Monitoring · RS Universitas Airlangga · WE C.A.R.E</footer>
+</main>
+</div>
+<script>
+const LOCATIONS={
+ 'GT 1':{suhu:['Ruang Selasar A','Ruang Selasar B','Kulkas Obat','Ruang Farmasi','Ruang Linen','Ruang Gudang','Selasar Gudang','Pantry','Anteroom'],tekanan:[]},
+ 'GT 2':{suhu:['Ruang Selasar','Ruang Isolasi 1','Ruang Isolasi 2','Ruang Isolasi 3','Ruang Isolasi 4','Kulkas Obat','Ruang Farmasi','Ruang Gudang','Pantry','Anteroom','Nurse Station'],tekanan:['Tekanan Negatif Isolasi 1','Tekanan Negatif Isolasi 2','Tekanan Negatif Isolasi 3','Tekanan Negatif Isolasi 4','Selasar Isolasi 12','Selasar Isolasi 34']}
+};
+let current={room:'GT 1',module:'suhu'}, sessionRecords=[];
+let API_URL='';
+const $=id=>document.getElementById(id);
+function nowLocal(){const d=new Date();return {date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}}
+function updateClock(){const d=new Date();$('dateTime').textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})+' · '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+' WIB'}
+updateClock();setInterval(updateClock,60000);
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.navbtn').forEach(n=>n.classList.remove('active'));b.classList.add('active');showPage(b.dataset.page)}));
+function showPage(page){['home','rooms','form','reports','master'].forEach(p=>$('page-'+p).classList.toggle('hidden',p!==page));if(page==='reports')loadHistory();window.scrollTo({top:0,behavior:'smooth'})}
+function openRoom(room,module){current={room,module};buildForm();showPage('form')}
+function field(label,id,type='text',value='',extra=''){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${id}" type="${type}" value="${value}" ${extra}></div>`}
+function selectField(label,id,opts,required=true){return `<div class="field"><label for="${id}">${label}</label><select id="${id}" name="${id}" ${required?'required':''}>${opts.map(o=>`<option value="${o.value??o}">${o.label??o}</option>`).join('')}</select></div>`}
+function buildForm(){
+ const {date,time}=nowLocal();let html='',title='',desc='';
+ if(current.module==='suhu'){
+  title=`Pemantauan Suhu${current.room==='GT 2'?' & Tekanan':''} — ICU ${current.room}`;
+  desc='Isi hasil aktual untuk setiap titik yang diperiksa. Batas penerimaan harus disesuaikan dengan SOP rumah sakit.';
+  html=`<input type="hidden" name="jenis" value="Suhu & Tekanan"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Tanggal pemeriksaan','tanggal','date',date,'required')}${field('Jam pemeriksaan','jam','time',time,'required')}${field('Nama petugas','petugas','text','','required')}</div><h3 style="margin-top:22px">Pemantauan Suhu</h3><div class="table-wrap"><table><thead><tr><th>No</th><th>Titik pemantauan</th><th>Suhu aktual (°C)</th><th>Batas bawah (°C)</th><th>Batas atas (°C)</th><th>Status</th><th>Tindak lanjut</th></tr></thead><tbody>`;
+  LOCATIONS[current.room].suhu.forEach((loc,i)=>{html+=`<tr><td>${i+1}</td><td>${loc}</td><td><input aria-label="Suhu ${loc}" name="suhu_${i}" type="number" step="0.1" required></td><td><input aria-label="Batas bawah ${loc}" name="min_${i}" type="number" step="0.1" placeholder="Atur SOP"></td><td><input aria-label="Batas atas ${loc}" name="max_${i}" type="number" step="0.1" placeholder="Atur SOP"></td><td><select name="status_suhu_${i}"><option value="">Pilih</option><option>Sesuai</option><option>Tidak Sesuai</option></select></td><td><input name="tindak_suhu_${i}" placeholder="Jika menyimpang"></td></tr>`});
+  html+='</tbody></table></div>';
+  if(current.room==='GT 2'){html+='<h3 style="margin-top:22px">Pemantauan Tekanan Negatif / Diferensial</h3><p class="sub">Masukkan satuan dan batas sesuai ketentuan serta alat ukur yang ditetapkan rumah sakit.</p><div class="table-wrap"><table><thead><tr><th>No</th><th>Titik pemantauan</th><th>Hasil ukur</th><th>Satuan</th><th>Batas penerimaan</th><th>Status</th><th>Tindak lanjut</th></tr></thead><tbody>';LOCATIONS['GT 2'].tekanan.forEach((loc,i)=>{html+=`<tr><td>${i+1}</td><td>${loc}</td><td><input name="tekanan_${i}" type="number" step="any" required></td><td><input name="satuan_${i}" placeholder="Sesuai SOP" required></td><td><input name="batas_tekanan_${i}" placeholder="Sesuai SOP" required></td><td><select name="status_tekanan_${i}" required><option value="">Pilih</option><option>Sesuai</option><option>Tidak Sesuai</option></select></td><td><input name="tindak_tekanan_${i}" placeholder="Jika menyimpang"></td></tr>`});html+='</tbody></table></div>'}
+  html+='<div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan pemeriksaan</button></div>';
+ }else if(current.module==='apar'){
+  title=`Monitoring APAR — ICU ${current.room}`;desc='Satu formulir untuk satu APAR. Catat temuan dan tindak lanjut bila ada ketidaksesuaian.';
+  html=`<div class="form-grid"><input type="hidden" name="jenis" value="APAR"><input type="hidden" name="ruangan" value="${current.room}">${field('Tanggal pemeriksaan','tanggal','date',date,'required')}${field('Jam pemeriksaan','jam','time',time,'required')}${field('Nomor APAR','nomor_apar','text','','required')}${field('Lokasi APAR','lokasi_apar','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal servis terakhir','servis_terakhir','date')}${field('Jadwal servis berikutnya','servis_berikutnya','date')}</div><h3 style="margin:22px 0 8px">Checklist inspeksi visual</h3>`;
+  ['APAR tersedia di tempatnya','Akses mudah dan tidak terhalang','Tabung tidak tampak rusak atau bocor','Pin pengaman dan segel utuh','Indikator tekanan normal (jika tersedia)'].forEach((x,i)=>{html+=`<div class="checkrow"><span>${x}</span><select name="check_${i}" required><option value="">Pilih hasil</option><option>Sesuai</option><option>Tidak Sesuai</option><option>Tidak Berlaku</option></select></div>`});
+  html+=`<div class="form-grid" style="margin-top:14px">${'<div class="field full"><label for="temuan">Keterangan / temuan</label><textarea id="temuan" name="temuan"></textarea></div>'}<div class="field full"><label for="tindak_lanjut">Tindak lanjut</label><textarea id="tindak_lanjut" name="tindak_lanjut"></textarea></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan inspeksi APAR</button></div>`;
+ }else{
+  title=`Defibrilator — ICU ${current.room}`;desc='Catatan self test dan kalibrasi dipisahkan. Foto self test akan diunggah ke Google Drive setelah backend dikonfigurasi.';
+  html=`<input type="hidden" name="jenis" value="Defibrilator"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Nama / identitas alat','nama_alat','text','','required')}${field('Nomor inventaris','inventaris','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal self test','tanggal','date',date,'required')}${field('Jam self test','jam','time',time,'required')}<div class="field"><label for="foto">Foto hasil self test (JPG/PNG, maks. 10 MB)</label><input id="foto" name="foto" type="file" accept="image/jpeg,image/png"></div><div class="field full"><label for="keterangan">Keterangan / hasil self test</label><textarea id="keterangan" name="keterangan" required placeholder="Catat hasil atau pesan error yang muncul"></textarea></div><div class="field"><label for="kal_terakhir">Tanggal kalibrasi terakhir</label><input id="kal_terakhir" name="kal_terakhir" type="date"></div><div class="field"><label for="kal_berikut">Jatuh tempo kalibrasi berikutnya</label><input id="kal_berikut" name="kal_berikut" type="date"></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan catatan defibrilator</button></div>`;
+ }
+ $('formTitle').textContent=title;$('formDescription').textContent=desc;$('inspectionForm').innerHTML=html;$('formStatus').innerHTML='';
+ $('inspectionForm').onsubmit=submitForm;
+}
+async function submitForm(ev){
+ ev.preventDefault();const form=ev.currentTarget,button=form.querySelector('button[type="submit"]'),status=$('formStatus');button.disabled=true;status.innerHTML='<div class="status info">Menyimpan data…</div>';
+ const fd=new FormData(form),data={};fd.forEach((v,k)=>{if(k==='foto')return;data[k]=v});
+ data.ruangan=current.room;data.jenis=current.module==='suhu'?'Suhu & Tekanan':current.module==='apar'?'APAR':'Defibrilator';data.clientTimestamp=new Date().toISOString();
+ const file=form.querySelector('[name="foto"]')?.files?.[0];
+ if(file){if(file.size>10*1024*1024){status.innerHTML='<div class="status err">Gagal: ukuran foto melebihi 10 MB.</div>';button.disabled=false;return}data.fotoNama=file.name;data.fotoTipe=file.type;data.fotoBase64=await fileToBase64(file)}
+ if(!API_URL){status.innerHTML='<div class="status err">Belum tersimpan. URL Google Apps Script belum dikonfigurasi. Buka menu Master Data untuk mengaturnya.</div>';button.disabled=false;return}
+ try{
+  const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save',data})});
+  const result=await response.json();
+  if(!response.ok||result.success!==true)throw new Error(result.message||'Server menolak penyimpanan.');
+  sessionRecords.unshift({...data,serverSaved:true,recordId:result.id||'',savedAt:new Date().toISOString()});updateCounts();status.innerHTML='<div class="status ok">✓ Data berhasil disimpan ke Google Sheets/Drive.</div>';form.reset();
+ }catch(err){status.innerHTML='<div class="status err">✕ Gagal menyimpan data. '+escapeHtml(err.message)+' Periksa koneksi, URL deployment, izin, dan backend Apps Script.</div>'}
+ finally{button.disabled=false}
+}
+function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function updateCounts(){const r=sessionRecords;$('countSuhu').textContent=r.filter(x=>x.jenis==='Suhu & Tekanan').length;$('countApar').textContent=r.filter(x=>x.jenis==='APAR').length;$('countDefib').textContent=r.filter(x=>x.jenis==='Defibrilator').length;$('countAll').textContent=r.length}
+function saveConfig(){const val=$('apiUrl').value.trim();if(!val.startsWith('https://script.google.com/macros/s/')||!val.endsWith('/exec')){$('configStatus').innerHTML='<div class="status err">URL harus berupa URL Web App Google Apps Script yang berakhiran /exec.</div>';return}API_URL=val;sessionStorage.setItem('icuFacilityApiUrl',API_URL);$('configStatus').innerHTML='<div class="status ok">URL disimpan di sesi browser ini. Lakukan tes koneksi sebelum menyimpan data.</div>'}
+async function testApi(){const val=$('apiUrl').value.trim();if(!val){$('configStatus').innerHTML='<div class="status err">Masukkan URL terlebih dahulu.</div>';return}try{const r=await fetch(val);const t=await r.text();$('configStatus').innerHTML='<div class="status info">Server merespons. Pastikan endpoint GET menampilkan status API yang aktif. Respons: '+escapeHtml(t.slice(0,180))+'</div>'}catch(e){$('configStatus').innerHTML='<div class="status err">Tes koneksi gagal atau diblokir browser (CORS). Backend perlu mendukung metode komunikasi yang sesuai untuk GitHub Pages.</div>'}}
+async function loadHistory(){if(!API_URL){$('reportStatus').className='status info';$('reportStatus').textContent='URL backend belum dikonfigurasi. Riwayat server belum dapat dimuat.';renderHistory();return}try{const r=await fetch(API_URL+'?action=list');const d=await r.json();if(!d.success)throw new Error(d.message||'Tidak dapat membaca data');sessionRecords=d.records||[];updateCounts();$('reportStatus').className='status ok';$('reportStatus').textContent='Riwayat berhasil dimuat dari server.';renderHistory()}catch(e){$('reportStatus').className='status err';$('reportStatus').textContent='Gagal memuat riwayat: '+e.message+' (periksa endpoint GET/CORS).';renderHistory()}}
+function renderHistory(){const filter=$('historyFilter').value;const rows=sessionRecords.filter(r=>!filter||r.jenis===filter);if(!rows.length){$('historyTable').className='empty';$('historyTable').textContent='Belum ada data untuk ditampilkan.';return}let h='<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Ruangan</th><th>Jenis</th><th>Petugas</th><th>Ringkasan</th><th>Status</th></tr></thead><tbody>';rows.forEach(r=>{const summary=r.jenis==='APAR'?(r.nomor_apar||'Inspeksi APAR'):r.jenis==='Defibrilator'?(r.nama_alat||'Self test'): 'Catatan pemantauan';h+=`<tr><td>${escapeHtml(r.tanggal||'')}</td><td>${escapeHtml(r.ruangan||'')}</td><td>${escapeHtml(r.jenis||'')}</td><td>${escapeHtml(r.petugas||'')}</td><td>${escapeHtml(summary)}</td><td><span class="tag">Tersimpan</span></td></tr>`});h+='</tbody></table></div>';$('historyTable').className='';$('historyTable').innerHTML=h}
+try{API_URL=sessionStorage.getItem('icuFacilityApiUrl')||'';$('apiUrl').value=API_URL}catch(e){}
+</script>
+</body>
+</html>
