@@ -150,7 +150,46 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function updateCounts(){const r=sessionRecords;$('countSuhu').textContent=r.filter(x=>x.jenis==='Suhu & Tekanan').length;$('countApar').textContent=r.filter(x=>x.jenis==='APAR').length;$('countDefib').textContent=r.filter(x=>x.jenis==='Defibrilator').length;$('countAll').textContent=r.length}
 function saveConfig(){const val=$('apiUrl').value.trim();if(!val.startsWith('https://script.google.com/macros/s/')||!val.endsWith('/exec')){$('configStatus').innerHTML='<div class="status err">URL harus berupa URL Web App Google Apps Script yang berakhiran /exec.</div>';return}API_URL=val;sessionStorage.setItem('icuFacilityApiUrl',API_URL);$('configStatus').innerHTML='<div class="status ok">URL disimpan di sesi browser ini. Lakukan tes koneksi sebelum menyimpan data.</div>'}
 async function testApi(){const val=$('apiUrl').value.trim();if(!val){$('configStatus').innerHTML='<div class="status err">Masukkan URL terlebih dahulu.</div>';return}try{const r=await fetch(val);const t=await r.text();$('configStatus').innerHTML='<div class="status info">Server merespons. Pastikan endpoint GET menampilkan status API yang aktif. Respons: '+escapeHtml(t.slice(0,180))+'</div>'}catch(e){$('configStatus').innerHTML='<div class="status err">Tes koneksi gagal atau diblokir browser (CORS). Backend perlu mendukung metode komunikasi yang sesuai untuk GitHub Pages.</div>'}}
-async function loadHistory(){if(!API_URL){$('reportStatus').className='status info';$('reportStatus').textContent='URL backend belum dikonfigurasi. Riwayat server belum dapat dimuat.';renderHistory();return}try{const r=await fetch(API_URL+'?action=list');const d=await r.json();if(!d.success)throw new Error(d.message||'Tidak dapat membaca data');sessionRecords=d.records||[];updateCounts();$('reportStatus').className='status ok';$('reportStatus').textContent='Riwayat berhasil dimuat dari server.';renderHistory()}catch(e){$('reportStatus').className='status err';$('reportStatus').textContent='Gagal memuat riwayat: '+e.message+' (periksa endpoint GET/CORS).';renderHistory()}}
+
+async function loadHistory() {
+  if (!API_URL) {
+    $('reportStatus').className = 'status info';
+    $('reportStatus').textContent =
+      'URL backend belum dikonfigurasi.';
+    renderHistory();
+    return;
+  }
+
+  try {
+    const r = await fetch(API_URL + '?action=list&jenis=all');
+    const d = await r.json();
+
+    if (!d.success) {
+      throw new Error(d.message || 'Tidak dapat membaca data');
+    }
+
+    sessionRecords = (d.records || []).map(r => {
+      const x = {};
+      Object.keys(r).forEach(k => {
+        x[k.toLowerCase()] = r[k];
+      });
+      return x;
+    });
+
+    updateCounts();
+    $('reportStatus').className = 'status ok';
+    $('reportStatus').textContent =
+      'Riwayat berhasil dimuat dari server.';
+    renderHistory();
+
+  } catch (e) {
+    $('reportStatus').className = 'status err';
+    $('reportStatus').textContent =
+      'Gagal memuat riwayat: ' + e.message;
+    renderHistory();
+  }
+}
+
 function renderHistory(){const filter=$('historyFilter').value;const rows=sessionRecords.filter(r=>!filter||r.jenis===filter);if(!rows.length){$('historyTable').className='empty';$('historyTable').textContent='Belum ada data untuk ditampilkan.';return}let h='<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Ruangan</th><th>Jenis</th><th>Petugas</th><th>Ringkasan</th><th>Status</th></tr></thead><tbody>';rows.forEach(r=>{const summary=r.jenis==='APAR'?(r.nomor_apar||'Inspeksi APAR'):r.jenis==='Defibrilator'?(r.nama_alat||'Self test'): 'Catatan pemantauan';h+=`<tr><td>${escapeHtml(r.tanggal||'')}</td><td>${escapeHtml(r.ruangan||'')}</td><td>${escapeHtml(r.jenis||'')}</td><td>${escapeHtml(r.petugas||'')}</td><td>${escapeHtml(summary)}</td><td><span class="tag">Tersimpan</span></td></tr>`});h+='</tbody></table></div>';$('historyTable').className='';$('historyTable').innerHTML=h}
 try{API_URL=sessionStorage.getItem('icuFacilityApiUrl')||'';$('apiUrl').value=API_URL}catch(e){}
 </script>
