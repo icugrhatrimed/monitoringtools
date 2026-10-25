@@ -93,10 +93,59 @@ footer{text-align:center;padding:18px;color:#6d7e91;font-size:12px}
 </main>
 </div>
 <script>
-const LOCATIONS={
- 'GT 1':{suhu:['Ruang Selasar A','Ruang Selasar B','Kulkas Obat','Ruang Farmasi','Ruang Linen','Ruang Gudang','Selasar Gudang','Pantry','Anteroom'],tekanan:[]},
- 'GT 2':{suhu:['Ruang Selasar','Ruang Isolasi 1','Ruang Isolasi 2','Ruang Isolasi 3','Ruang Isolasi 4','Kulkas Obat','Ruang Farmasi','Ruang Gudang','Pantry','Anteroom','Nurse Station'],tekanan:['Tekanan Negatif Isolasi 1','Tekanan Negatif Isolasi 2','Tekanan Negatif Isolasi 3','Tekanan Negatif Isolasi 4','Selasar Isolasi 12','Selasar Isolasi 34']}
+
+const LOCATIONS = {
+  'GT 1': {
+    suhu: [
+      'Ruang Selasar A',
+      'Ruang Selasar B',
+      'Kulkas Obat',
+      'Ruang Farmasi',
+      'Ruang Linen',
+      'Ruang Gudang',
+      'Selasar Gudang',
+      'Pantry',
+      'Anteroom'
+    ],
+    tekanan: [],
+    kelembapan: [
+      'Selasar A',
+      'Selasar B'
+    ]
+  },
+
+  'GT 2': {
+    suhu: [
+      'Ruang Selasar',
+      'Ruang Isolasi 1',
+      'Ruang Isolasi 2',
+      'Ruang Isolasi 3',
+      'Ruang Isolasi 4',
+      'Kulkas Obat',
+      'Ruang Farmasi',
+      'Ruang Gudang',
+      'Pantry',
+      'Anteroom',
+      'Nurse Station'
+    ],
+    tekanan: [
+      'Tekanan Negatif Isolasi 1',
+      'Tekanan Negatif Isolasi 2',
+      'Tekanan Negatif Isolasi 3',
+      'Tekanan Negatif Isolasi 4',
+      'Selasar Isolasi 12',
+      'Selasar Isolasi 34'
+    ],
+    kelembapan: [
+      'Selasar Utama',
+      'Ruang Isolasi 1',
+      'Ruang Isolasi 2',
+      'Ruang Isolasi 3',
+      'Ruang Isolasi 4'
+    ]
+  }
 };
+
 let current={room:'GT 1',module:'suhu'}, sessionRecords=[];
 let API_URL='';
 const $=id=>document.getElementById(id);
@@ -110,14 +159,115 @@ function field(label,id,type='text',value='',extra=''){return `<div class="field
 function selectField(label,id,opts,required=true){return `<div class="field"><label for="${id}">${label}</label><select id="${id}" name="${id}" ${required?'required':''}>${opts.map(o=>`<option value="${o.value??o}">${o.label??o}</option>`).join('')}</select></div>`}
 function buildForm(){
  const {date,time}=nowLocal();let html='',title='',desc='';
- if(current.module==='suhu'){
-  title=`Pemantauan Suhu${current.room==='GT 2'?' & Tekanan':''} — ICU ${current.room}`;
-  desc='Isi hasil aktual untuk setiap titik yang diperiksa. Batas penerimaan harus disesuaikan dengan SOP rumah sakit.';
-  html=`<input type="hidden" name="jenis" value="Suhu & Tekanan"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Tanggal pemeriksaan','tanggal','date',date,'required')}${field('Jam pemeriksaan','jam','time',time,'required')}${field('Nama petugas','petugas','text','','required')}</div><h3 style="margin-top:22px">Pemantauan Suhu</h3><div class="table-wrap"><table><thead><tr><th>No</th><th>Titik pemantauan</th><th>Suhu aktual (°C)</th><th>Batas bawah (°C)</th><th>Batas atas (°C)</th><th>Status</th><th>Tindak lanjut</th></tr></thead><tbody>`;
-  LOCATIONS[current.room].suhu.forEach((loc,i)=>{html+=`<tr><td>${i+1}</td><td>${loc}</td><td><input aria-label="Suhu ${loc}" name="suhu_${i}" type="number" step="0.1" required></td><td><input aria-label="Batas bawah ${loc}" name="min_${i}" type="number" step="0.1" placeholder="Atur SOP"></td><td><input aria-label="Batas atas ${loc}" name="max_${i}" type="number" step="0.1" placeholder="Atur SOP"></td><td><select name="status_suhu_${i}"><option value="">Pilih</option><option>Sesuai</option><option>Tidak Sesuai</option></select></td><td><input name="tindak_suhu_${i}" placeholder="Jika menyimpang"></td></tr>`});
+
+if(current.module==='suhu'){
+  const batasSuhu = loc =>
+    loc.toLowerCase().includes('kulkas obat')
+      ? {min:2,max:8}
+      : {min:22,max:25};
+
+  title=`Pemantauan Suhu, Tekanan & Kelembapan — ICU ${current.room}`;
+  desc='Masukkan hasil pengukuran aktual. Batas baku dikunci dan status ditentukan otomatis oleh sistem.';
+
+  html=`
+    <input type="hidden" name="jenis" value="Suhu & Tekanan">
+    <input type="hidden" name="ruangan" value="${current.room}">
+    <div class="form-grid">
+      ${field('Tanggal pemeriksaan','tanggal','date',date,'required')}
+      ${field('Jam pemeriksaan','jam','time',time,'required')}
+      ${field('Nama petugas','petugas','text','','required')}
+    </div>
+
+    <h3 style="margin-top:22px">Pemantauan Suhu</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th><th>Titik pemantauan</th>
+            <th>Suhu aktual (°C)</th><th>Batas baku</th>
+            <th>Status otomatis</th><th>Peringatan / tindak lanjut</th>
+          </tr>
+        </thead><tbody>`;
+
+  LOCATIONS[current.room].suhu.forEach((loc,i)=>{
+    const b=batasSuhu(loc);
+    html+=`<tr>
+      <td>${i+1}</td>
+      <td>${loc}</td>
+      <td><input name="suhu_${i}" type="number" step="0.1"
+        data-parameter="suhu" data-min="${b.min}" data-max="${b.max}"
+        data-status="status_suhu_${i}" data-warning="peringatan_suhu_${i}"
+        data-tindak="tindak_suhu_${i}" required></td>
+      <td>${b.min}–${b.max} °C</td>
+      <td><span id="status_suhu_${i}">Belum diukur</span>
+        <input type="hidden" name="status_suhu_${i}" value="Belum diukur"></td>
+      <td><span id="peringatan_suhu_${i}">Masukkan hasil ukur</span>
+        <input type="hidden" name="tindak_suhu_${i}" value=""></td>
+    </tr>`;
+  });
+
   html+='</tbody></table></div>';
-  if(current.room==='GT 2'){html+='<h3 style="margin-top:22px">Pemantauan Tekanan Negatif / Diferensial</h3><p class="sub">Masukkan satuan dan batas sesuai ketentuan serta alat ukur yang ditetapkan rumah sakit.</p><div class="table-wrap"><table><thead><tr><th>No</th><th>Titik pemantauan</th><th>Hasil ukur</th><th>Satuan</th><th>Batas penerimaan</th><th>Status</th><th>Tindak lanjut</th></tr></thead><tbody>';LOCATIONS['GT 2'].tekanan.forEach((loc,i)=>{html+=`<tr><td>${i+1}</td><td>${loc}</td><td><input name="tekanan_${i}" type="number" step="any" required></td><td><input name="satuan_${i}" placeholder="Sesuai SOP" required></td><td><input name="batas_tekanan_${i}" placeholder="Sesuai SOP" required></td><td><select name="status_tekanan_${i}" required><option value="">Pilih</option><option>Sesuai</option><option>Tidak Sesuai</option></select></td><td><input name="tindak_tekanan_${i}" placeholder="Jika menyimpang"></td></tr>`});html+='</tbody></table></div>'}
-  html+='<div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan pemeriksaan</button></div>';
+
+  if(current.room==='GT 2'){
+    html+=`
+      <h3 style="margin-top:22px">Pemantauan Tekanan Negatif / Diferensial</h3>
+      <p class="sub">Batas baku: −15 sampai −10. Pastikan satuan sesuai alat ukur dan SOP rumah sakit.</p>
+      <div class="table-wrap"><table>
+      <thead><tr><th>No</th><th>Titik pemantauan</th>
+      <th>Hasil ukur</th><th>Batas baku</th>
+      <th>Status otomatis</th><th>Peringatan / tindak lanjut</th></tr></thead><tbody>`;
+
+    LOCATIONS['GT 2'].tekanan.forEach((loc,i)=>{
+      html+=`<tr>
+        <td>${i+1}</td><td>${loc}</td>
+        <td><input name="tekanan_${i}" type="number" step="any"
+          data-parameter="tekanan" data-min="-15" data-max="-10"
+          data-status="status_tekanan_${i}"
+          data-warning="peringatan_tekanan_${i}"
+          data-tindak="tindak_tekanan_${i}" required></td>
+        <td>−15 sampai −10</td>
+        <td><span id="status_tekanan_${i}">Belum diukur</span>
+          <input type="hidden" name="status_tekanan_${i}" value="Belum diukur"></td>
+        <td><span id="peringatan_tekanan_${i}">Masukkan hasil ukur</span>
+          <input type="hidden" name="tindak_tekanan_${i}" value=""></td>
+      </tr>`;
+    });
+
+    html+='</tbody></table></div>';
+  }
+
+  html+=`
+    <h3 style="margin-top:22px">Pemantauan Kelembapan</h3>
+    <p class="sub">Batas baku: 50–70% RH.</p>
+    <div class="table-wrap"><table>
+    <thead><tr><th>No</th><th>Titik pemantauan</th>
+    <th>Kelembapan aktual (% RH)</th><th>Batas baku</th>
+    <th>Status otomatis</th><th>Peringatan / tindak lanjut</th></tr></thead><tbody>`;
+
+  (LOCATIONS[current.room].kelembapan||[]).forEach((loc,i)=>{
+    html+=`<tr>
+      <td>${i+1}</td><td>${loc}</td>
+      <td><input name="kelembapan_${i}" type="number" step="0.1"
+        min="0" max="100" data-parameter="kelembapan"
+        data-min="50" data-max="70"
+        data-status="status_kelembapan_${i}"
+        data-warning="peringatan_kelembapan_${i}"
+        data-tindak="tindak_kelembapan_${i}" required></td>
+      <td>50–70% RH</td>
+      <td><span id="status_kelembapan_${i}">Belum diukur</span>
+        <input type="hidden" name="status_kelembapan_${i}" value="Belum diukur"></td>
+      <td><span id="peringatan_kelembapan_${i}">Masukkan hasil ukur</span>
+        <input type="hidden" name="tindak_kelembapan_${i}" value=""></td>
+    </tr>`;
+  });
+
+  html+='</tbody></table></div>';
+
+  html+=`<div class="actions">
+    <button type="reset" class="btn btn-light">Reset</button>
+    <button class="btn btn-primary" type="submit">▣ Simpan pemeriksaan</button>
+  </div>`;
+
  }else if(current.module==='apar'){
   title=`Monitoring APAR — ICU ${current.room}`;desc='Satu formulir untuk satu APAR. Catat temuan dan tindak lanjut bila ada ketidaksesuaian.';
   html=`<div class="form-grid"><input type="hidden" name="jenis" value="APAR"><input type="hidden" name="ruangan" value="${current.room}">${field('Tanggal pemeriksaan','tanggal','date',date,'required')}${field('Jam pemeriksaan','jam','time',time,'required')}${field('Nomor APAR','nomor_apar','text','','required')}${field('Lokasi APAR','lokasi_apar','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal servis terakhir','servis_terakhir','date')}${field('Jadwal servis berikutnya','servis_berikutnya','date')}</div><h3 style="margin:22px 0 8px">Checklist inspeksi visual</h3>`;
@@ -127,9 +277,56 @@ function buildForm(){
   title=`Defibrilator — ICU ${current.room}`;desc='Catatan self test dan kalibrasi dipisahkan. Foto self test akan diunggah ke Google Drive setelah backend dikonfigurasi.';
   html=`<input type="hidden" name="jenis" value="Defibrilator"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Nama / identitas alat','nama_alat','text','','required')}${field('Nomor inventaris','inventaris','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal self test','tanggal','date',date,'required')}${field('Jam self test','jam','time',time,'required')}<div class="field"><label for="foto">Foto hasil self test (JPG/PNG, maks. 10 MB)</label><input id="foto" name="foto" type="file" accept="image/jpeg,image/png"></div><div class="field full"><label for="keterangan">Keterangan / hasil self test</label><textarea id="keterangan" name="keterangan" required placeholder="Catat hasil atau pesan error yang muncul"></textarea></div><div class="field"><label for="kal_terakhir">Tanggal kalibrasi terakhir</label><input id="kal_terakhir" name="kal_terakhir" type="date"></div><div class="field"><label for="kal_berikut">Jatuh tempo kalibrasi berikutnya</label><input id="kal_berikut" name="kal_berikut" type="date"></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan catatan defibrilator</button></div>`;
  }
- $('formTitle').textContent=title;$('formDescription').textContent=desc;$('inspectionForm').innerHTML=html;$('formStatus').innerHTML='';
- $('inspectionForm').onsubmit=submitForm;
+
+$('formTitle').textContent=title;
+$('formDescription').textContent=desc;
+$('inspectionForm').innerHTML=html;
+$('formStatus').innerHTML='';
+$('inspectionForm').onsubmit=submitForm;
+bindMonitoringStatus();
 }
+
+
+function updateMonitoringStatus(input){
+  const nilai = input.value;
+  const statusEl = $(input.dataset.status);
+  const warningEl = $(input.dataset.warning);
+  const statusHidden = input.form.elements[input.dataset.status];
+  const tindakHidden = input.form.elements[input.dataset.tindak];
+
+  if(nilai==='' || !Number.isFinite(Number(nilai))){
+    statusEl.textContent='Belum diukur';
+    warningEl.textContent='Masukkan hasil ukur';
+    statusHidden.value='Belum diukur';
+    tindakHidden.value='';
+    return;
+  }
+
+  const n=Number(nilai);
+  const min=Number(input.dataset.min);
+  const max=Number(input.dataset.max);
+  const aman=n>=min && n<=max;
+
+  statusEl.textContent=aman?'SESUAI':'TIDAK SESUAI';
+  statusHidden.value=aman?'Sesuai':'Tidak Sesuai';
+
+  const pesan=aman
+    ? 'Dalam batas baku'
+    : `⚠️ Di luar batas baku (${min}–${max}). Hubungi teknisi/IPSRS.`;
+
+  warningEl.textContent=pesan;
+  tindakHidden.value=aman?'':pesan;
+}
+
+function bindMonitoringStatus(){
+  document.querySelectorAll(
+    '#inspectionForm input[data-parameter]'
+  ).forEach(input=>{
+    input.addEventListener('input',()=>updateMonitoringStatus(input));
+    updateMonitoringStatus(input);
+  });
+}
+
 async function submitForm(ev){
  ev.preventDefault();const form=ev.currentTarget,button=form.querySelector('button[type="submit"]'),status=$('formStatus');button.disabled=true;status.innerHTML='<div class="status info">Menyimpan data…</div>';
  const fd=new FormData(form),data={};fd.forEach((v,k)=>{if(k==='foto')return;data[k]=v});
