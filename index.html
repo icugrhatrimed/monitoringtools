@@ -432,6 +432,9 @@ API_URL=DEFAULT_API_URL;
 $('apiUrl').value=API_URL;
 try{localStorage.setItem('icuFacilityApiUrl',API_URL)}catch(e){}
 loadHistory();
+// Sinkronisasi ringan: muat ulang data server setiap 60 detik pada perangkat yang sedang membuka aplikasi.
+setInterval(() => { if (document.visibilityState === 'visible') loadHistory(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadHistory(); });
 </script>
 </body>
 </html>
