@@ -282,7 +282,7 @@ if(current.module==='suhu'){
   ['APAR tersedia di tempatnya','Akses mudah dan tidak terhalang','Tabung tidak tampak rusak atau bocor','Pin pengaman dan segel utuh','Indikator tekanan normal (jika tersedia)'].forEach((x,i)=>{html+=`<div class="checkrow"><span>${x}</span><select name="check_${i}" required><option value="">Pilih hasil</option><option>Sesuai</option><option>Tidak Sesuai</option><option>Tidak Berlaku</option></select></div>`});
   html+=`<div class="form-grid" style="margin-top:14px">${'<div class="field full"><label for="temuan">Keterangan / temuan</label><textarea id="temuan" name="temuan"></textarea></div>'}<div class="field full"><label for="tindak_lanjut">Tindak lanjut</label><textarea id="tindak_lanjut" name="tindak_lanjut"></textarea></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan inspeksi APAR</button></div>`;
  }else{
-  title=`Defibrilator — ICU ${current.room}`;desc='Catat identitas alat, hasil self test, dan keterangan bila ditemukan kendala. Foto self test dapat diunggah setelah backend mendukung penyimpanan foto.';
+  title=`Defibrilator — ICU ${current.room}`;desc='Catat identitas alat, hasil self test, dan keterangan bila ditemukan kendala. Foto self test akan disimpan otomatis ke Google Drive dengan akses terbatas.';
   html=`<input type="hidden" name="jenis" value="Defibrilator"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Nama / identitas alat','nama_alat','text','','required')}${field('Nomor inventaris','inventaris','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal self test','tanggal','date',date,'required')}${field('Jam self test','jam','time',time,'required')}<div class="field"><label for="foto">Foto hasil self test (JPG/PNG, maks. 10 MB)</label><input id="foto" name="foto" type="file" accept="image/jpeg,image/png"></div><div class="field full"><label for="keterangan">Keterangan / hasil self test</label><textarea id="keterangan" name="keterangan" required placeholder="Catat hasil atau pesan error yang muncul"></textarea></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan catatan defibrilator</button></div>`;
  }
 
@@ -346,19 +346,46 @@ function bindMonitoringStatus(){
 }
 
 async function submitForm(ev){
- ev.preventDefault();const form=ev.currentTarget,button=form.querySelector('button[type="submit"]'),status=$('formStatus');button.disabled=true;status.innerHTML='<div class="status info">Menyimpan data…</div>';
- const fd=new FormData(form),data={};fd.forEach((v,k)=>{if(k==='foto')return;data[k]=v});
- data.ruangan=current.room;data.jenis=current.module==='suhu'?'Suhu & Tekanan':current.module==='apar'?'APAR':'Defibrilator';data.clientTimestamp=new Date().toISOString();
+ ev.preventDefault();
+ const form=ev.currentTarget,button=form.querySelector('button[type="submit"]'),status=$('formStatus');
+ button.disabled=true;
+ status.innerHTML='<div class="status info">Menyimpan data…</div>';
+ const fd=new FormData(form),data={};
+ fd.forEach((v,k)=>{if(k!=='foto')data[k]=v});
+ data.ruangan=current.room;
+ data.jenis=current.module==='suhu'?'Suhu & Tekanan':current.module==='apar'?'APAR':'Defibrilator';
+ data.clientTimestamp=new Date().toISOString();
  const file=form.querySelector('[name="foto"]')?.files?.[0];
- if(file){if(file.size>10*1024*1024){status.innerHTML='<div class="status err">Gagal: ukuran foto melebihi 10 MB.</div>';button.disabled=false;return}data.fotoNama=file.name;data.fotoTipe=file.type;data.fotoBase64=await fileToBase64(file)}
- if(!API_URL){status.innerHTML='<div class="status err">Belum tersimpan. URL Google Apps Script belum dikonfigurasi. Buka menu Master Data untuk mengaturnya.</div>';button.disabled=false;return}
+ if(file){
+   if(!['image/jpeg','image/png'].includes(file.type)){
+     status.innerHTML='<div class="status err">Gagal: format foto harus JPG atau PNG.</div>';button.disabled=false;return;
+   }
+   if(file.size>10*1024*1024){
+     status.innerHTML='<div class="status err">Gagal: ukuran foto melebihi 10 MB.</div>';button.disabled=false;return;
+   }
+   data.fotoNama=file.name;data.fotoTipe=file.type;data.fotoBase64=await fileToBase64(file);
+ }
+ if(current.module==='defib'&&!file){
+   if(!confirm('Anda belum memilih foto hasil self test. Tetap simpan catatan tanpa foto?')){
+     button.disabled=false;status.innerHTML='';return;
+   }
+ }
+ if(!API_URL){status.innerHTML='<div class="status err">Belum tersimpan. URL Google Apps Script belum dikonfigurasi.</div>';button.disabled=false;return}
  try{
-  const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save',data})});
-  const result=await response.json();
-  if(!response.ok||result.success!==true)throw new Error(result.message||'Server menolak penyimpanan.');
-  sessionRecords.unshift({...data,serverSaved:true,recordId:result.id||'',savedAt:new Date().toISOString()});updateCounts();status.innerHTML='<div class="status ok">✓ Data berhasil disimpan ke Google Sheets/Drive.</div>';form.reset();
- }catch(err){status.innerHTML='<div class="status err">✕ Gagal menyimpan data. '+escapeHtml(err.message)+' Periksa koneksi, URL deployment, izin, dan backend Apps Script.</div>'}
- finally{button.disabled=false}
+   const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save',data})});
+   const result=await response.json();
+   if(!response.ok||result.success!==true)throw new Error(result.message||'Server menolak penyimpanan.');
+   const savedRecord={...data,serverSaved:true,recordId:result.id||'',savedAt:new Date().toISOString(),foto_id:result.fotoId||'',foto_url:result.fotoUrl||'',foto_nama:result.fotoNama||''};
+   delete savedRecord.fotoBase64;
+   sessionRecords.unshift(savedRecord);updateCounts();
+   const msg=result.fotoUrl
+     ? 'Data dan foto berhasil disimpan. <a href="'+escapeHtml(result.fotoUrl)+'" target="_blank" rel="noopener">Lihat foto di Google Drive</a>.'
+     : 'Data berhasil disimpan ke Google Sheets.';
+   status.innerHTML='<div class="status ok">✓ '+msg+'</div>';
+   form.reset();
+ }catch(err){
+   status.innerHTML='<div class="status err">✕ Gagal menyimpan data. '+escapeHtml(err.message)+' Periksa koneksi, URL deployment, izin Google Drive, dan backend Apps Script.</div>';
+ }finally{button.disabled=false}
 }
 function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -426,7 +453,19 @@ async function loadHistory() {
   }
 }
 
-function renderHistory(){const filter=$('historyFilter').value;const rows=sessionRecords.filter(r=>!filter||r.jenis===filter);if(!rows.length){$('historyTable').className='empty';$('historyTable').textContent='Belum ada data untuk ditampilkan.';return}let h='<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Ruangan</th><th>Jenis</th><th>Petugas</th><th>Ringkasan</th><th>Status</th></tr></thead><tbody>';rows.forEach(r=>{const summary=r.jenis==='APAR'?(r.nomor_apar||'Inspeksi APAR'):r.jenis==='Defibrilator'?(r.nama_alat||'Self test'): 'Catatan pemantauan';h+=`<tr><td>${escapeHtml(r.tanggal||'')}</td><td>${escapeHtml(r.ruangan||'')}</td><td>${escapeHtml(r.jenis||'')}</td><td>${escapeHtml(r.petugas||'')}</td><td>${escapeHtml(summary)}</td><td><span class="tag">Tersimpan</span></td></tr>`});h+='</tbody></table></div>';$('historyTable').className='';$('historyTable').innerHTML=h}
+function renderHistory(){
+ const filter=$('historyFilter').value;
+ const rows=sessionRecords.filter(r=>!filter||r.jenis===filter);
+ if(!rows.length){$('historyTable').className='empty';$('historyTable').textContent='Belum ada data untuk ditampilkan.';return}
+ let h='<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Ruangan</th><th>Jenis</th><th>Petugas</th><th>Ringkasan</th><th>Dokumentasi</th><th>Status</th></tr></thead><tbody>';
+ rows.forEach(r=>{
+   const summary=r.jenis==='APAR'?(r.nomor_apar||'Inspeksi APAR'):r.jenis==='Defibrilator'?(r.nama_alat||'Self test'):'Catatan pemantauan';
+   const photoUrl=r.foto_url||r.fotoUrl||'';
+   const photoCell=photoUrl?`<a href="${escapeHtml(photoUrl)}" target="_blank" rel="noopener">Lihat foto</a>`:'<span class="sub">—</span>';
+   h+=`<tr><td>${escapeHtml(r.tanggal||'')}</td><td>${escapeHtml(r.ruangan||'')}</td><td>${escapeHtml(r.jenis||'')}</td><td>${escapeHtml(r.petugas||'')}</td><td>${escapeHtml(summary)}</td><td>${photoCell}</td><td><span class="tag">Tersimpan</span></td></tr>`;
+ });
+ h+='</tbody></table></div>';$('historyTable').className='';$('historyTable').innerHTML=h;
+}
 // Gunakan URL default yang sama di setiap perangkat; konfigurasi lama lokal tidak menimpa URL ini.
 API_URL=DEFAULT_API_URL;
 $('apiUrl').value=API_URL;
