@@ -281,10 +281,72 @@ if(current.module==='suhu'){
   html=`<div class="form-grid"><input type="hidden" name="jenis" value="APAR"><input type="hidden" name="ruangan" value="${current.room}">${field('Tanggal pemeriksaan','tanggal','date',date,'required')}${field('Jam pemeriksaan','jam','time',time,'required')}${field('Nomor APAR','nomor_apar','text','','required')}${field('Lokasi APAR','lokasi_apar','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal servis terakhir','servis_terakhir','date')}${field('Jadwal servis berikutnya','servis_berikutnya','date')}</div><h3 style="margin:22px 0 8px">Checklist inspeksi visual</h3>`;
   ['APAR tersedia di tempatnya','Akses mudah dan tidak terhalang','Tabung tidak tampak rusak atau bocor','Pin pengaman dan segel utuh','Indikator tekanan normal (jika tersedia)'].forEach((x,i)=>{html+=`<div class="checkrow"><span>${x}</span><select name="check_${i}" required><option value="">Pilih hasil</option><option>Sesuai</option><option>Tidak Sesuai</option><option>Tidak Berlaku</option></select></div>`});
   html+=`<div class="form-grid" style="margin-top:14px">${'<div class="field full"><label for="temuan">Keterangan / temuan</label><textarea id="temuan" name="temuan"></textarea></div>'}<div class="field full"><label for="tindak_lanjut">Tindak lanjut</label><textarea id="tindak_lanjut" name="tindak_lanjut"></textarea></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan inspeksi APAR</button></div>`;
- }else{
-  title=`Defibrilator — ICU ${current.room}`;desc='Catat identitas alat, hasil self test, dan keterangan bila ditemukan kendala. Foto self test akan disimpan otomatis ke Google Drive dengan akses terbatas.';
-  html=`<input type="hidden" name="jenis" value="Defibrilator"><input type="hidden" name="ruangan" value="${current.room}"><div class="form-grid">${field('Nama / identitas alat','nama_alat','text','','required')}${field('Nomor inventaris','inventaris','text','','required')}${field('Nama petugas','petugas','text','','required')}${field('Tanggal self test','tanggal','date',date,'required')}${field('Jam self test','jam','time',time,'required')}<div class="field"><label for="foto">Foto hasil self test (JPG/PNG, maks. 10 MB)</label><input id="foto" name="foto" type="file" accept="image/jpeg,image/png"></div><div class="field full"><label for="keterangan">Keterangan / hasil self test</label><textarea id="keterangan" name="keterangan" required placeholder="Catat hasil atau pesan error yang muncul"></textarea></div></div><div class="actions"><button type="reset" class="btn btn-light">Reset</button><button class="btn btn-primary" type="submit">▣ Simpan catatan defibrilator</button></div>`;
+
+ } else {
+   title = `Defibrilator — ICU ${current.room}`;
+   desc = 'Pilih identitas alat dan hasil self test. Dokumentasikan hasil pemeriksaan melalui foto yang akan disimpan otomatis ke Google Drive.';
+
+   html = `
+     <input type="hidden" name="jenis" value="Defibrilator">
+     <input type="hidden" name="ruangan" value="${current.room}">
+
+     <div class="form-grid">
+
+       <div class="field">
+         <label for="nama_alat">Nama / identitas alat</label>
+         <select id="nama_alat" name="nama_alat" required>
+           <option value="">Pilih alat</option>
+           <option value="Lifepack">Lifepack</option>
+           <option value="ZOOL">ZOOL</option>
+           <option value="Mediana">Mediana</option>
+         </select>
+       </div>
+
+       ${field('Nama petugas','petugas','text','','required')}
+
+       ${field('Tanggal self test','tanggal','date',date,'required')}
+
+       ${field('Jam self test','jam','time',time,'required')}
+
+       <div class="field">
+         <label for="foto">
+           Foto hasil self test (JPG/PNG, maks. 10 MB)
+         </label>
+         <input
+           id="foto"
+           name="foto"
+           type="file"
+           accept="image/jpeg,image/png"
+         >
+       </div>
+
+       <div class="field">
+         <label for="hasil_self_test">Hasil self test</label>
+         <select
+           id="hasil_self_test"
+           name="hasil_self_test"
+           required
+         >
+           <option value="">Pilih hasil self test</option>
+           <option value="Normal">Normal</option>
+           <option value="Tidak Normal">Tidak Normal</option>
+         </select>
+       </div>
+
+     </div>
+
+     <div class="actions">
+       <button type="reset" class="btn btn-light">
+         Reset
+       </button>
+
+       <button type="submit" class="btn btn-primary">
+         ▣ Simpan catatan defibrilator
+       </button>
+     </div>
+   `;
  }
+
 
 $('formTitle').textContent=title;
 $('formDescription').textContent=desc;
